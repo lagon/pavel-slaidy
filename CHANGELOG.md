@@ -5,6 +5,9 @@ Dates are when the work landed, not when it was released; there are no releases 
 ## Unreleased
 
 ### Added
+- **PDF in portrait.** Export has a *PDF · portrait* button: every slide at the top of its
+  own A4 sheet, full width, the rest of the page left blank for writing on. Hidden slides
+  print, as they do in the landscape PDF.
 - **A talk is a link, and the link has three faces.** `scripts/publish.py` puts a deck
   under `site/`, where the Pages workflow makes it a page carrying the whole editor;
   `#present` on the end opens straight into the projector. Beside the deck it writes

@@ -149,6 +149,32 @@ addEventListener('load',async()=>{
   ok('print uses the stage as well',!!tmp.querySelector('.psl .stage'));
   ok('print markup matches the board',
      tmp.querySelector('.stage').className===st.className,tmp.querySelector('.stage').className);
+  // ---------- portrait PDF: an A4 sheet per slide, the slide across the top ----------
+  const realPrint=W.print;let printed=0;W.print=()=>{printed++;};
+  w.toPdf(false,true);await wait(600);
+  const pr=d.getElementById('printroot'),pages=[...pr.querySelectorAll('.psl')];
+  ok('portrait prints one page per slide',pages.length===w.S.slides.length,
+     pages.length+' pages, '+w.S.slides.length+' slides');
+  ok('every page is a portrait one',pages.every(x=>x.classList.contains('portrait')));
+  ok('and the print dialog opened',printed===1,String(printed));
+  const pg=d.getElementById('printpage');
+  ok('the page size is A4 portrait for this print',!!pg&&/size:\s*210mm 297mm/.test(pg.textContent),
+     pg?pg.textContent:'no page rule');
+  pr.style.display='block';
+  const sec=pages[0].getBoundingClientRect(),ps=pages[0].querySelector('.stage').getBoundingClientRect();
+  ok('the sheet is taller than it is wide, in A4 proportion',Math.abs(sec.height/sec.width-297/210)<0.01,
+     Math.round(sec.width)+'x'+Math.round(sec.height));
+  ok('the slide spans the width of the sheet',Math.abs(ps.width-sec.width)<2,
+     Math.round(ps.width)+' vs '+Math.round(sec.width));
+  ok('and sits at the top, keeping its shape',Math.abs(ps.top-sec.top)<1&&Math.abs(ps.height/ps.width-720/1280)<0.01,
+     'top '+Math.round(ps.top-sec.top)+', '+Math.round(ps.width)+'x'+Math.round(ps.height));
+  pr.style.display='';
+  W.dispatchEvent(new W.Event('afterprint'));
+  ok('after printing the page size goes back to landscape',!d.getElementById('printpage')&&!pr.innerHTML);
+  w.toPdf(false);await wait(600);
+  ok('and a landscape PDF is not portrait',!d.getElementById('printpage')&&
+     !pr.querySelector('.portrait')&&pr.querySelectorAll('.psl').length===w.S.slides.length);
+  W.dispatchEvent(new W.Event('afterprint'));W.print=realPrint;
   // ---------- a centred row keeps its figure ----------
   // Centring stops the figure column stretching, and the figure sizes itself
   // from that column's height — so it collapsed to nothing and simply was not

@@ -749,6 +749,10 @@ kbd{font:11px ui-monospace,monospace;background:#F1F2F5;border:1px solid var(--l
 .psl .stage{transform:scale(0.8770)}
 .psl.withnotes .stage{transform:scale(0.7000)}
 .psl.withnotes{display:flex;flex-direction:column}
+/* portrait: an A4 sheet a slide tall at the top, the rest left for writing on.
+   210mm is 793.7px, so the stage lands exactly across the page. */
+.psl.portrait{width:210mm;height:297mm;background:#fff}
+.psl.portrait .stage{transform:scale(0.6201)}
 .psl .pn{position:absolute;left:15mm;right:15mm;bottom:7mm;padding-top:3mm;border-top:1px solid var(--line);
  font-size:9.5pt;color:var(--gray);line-height:1.4;max-height:36mm;overflow:hidden}
 </style></head><body>
@@ -6454,10 +6458,13 @@ function save(){
    the visual style. Put it in <code>slides/</code> and <code>build_bundle.py</code> picks it up, so rebuilding
    from markdown never loses these settings.</p>
    <p class="tip" style="margin-top:14px">PDF opens the browser print dialog — choose
-   <b>Save as PDF</b> and leave margins at none. One slide per landscape page.</p>
+   <b>Save as PDF</b> and leave margins at none. One slide per landscape page; portrait puts
+   each slide at the top of its own A4 sheet.</p>
    <div class="rw" style="margin-top:8px">
-     <button class="b" id="ePdfN">PDF with speaker notes</button></div>`);
+     <button class="b" id="ePdfN">PDF with speaker notes</button>
+     <button class="b" id="ePdfP">PDF · portrait</button></div>`);
   document.getElementById('ePdf').onclick=()=>{closeDialog();toPdf(false);};
+  document.getElementById('ePdfP').onclick=()=>{closeDialog();toPdf(false,true);};
   document.getElementById('ePdfN').onclick=()=>{closeDialog();toPdf(true);};
   document.getElementById('eMd').onclick=()=>{
     const by=new Map();S.slides.forEach(s=>{const k=s.group||'deck';if(!by.has(k))by.set(k,[]);by.get(k).push(s);});
@@ -6509,20 +6516,27 @@ function save(){
 /* ---------- PDF ----------
    Every slide is rendered into a hidden container and handed to the browser's
    own print engine, so there is no dependency and no upload. */
-function printSlide(s,withNotes){
+function printSlide(s,withNotes,portrait){
   const notes=withNotes&&(s.notes||'').trim()
     ?`<div class="pn"><b>Notes.</b> ${notesHtml(s.notes.trim())}</div>`:'';
-  return `<section class="psl${withNotes?' withnotes':''}">
+  return `<section class="psl${withNotes?' withnotes':''}${portrait?' portrait':''}">
     <div class="${stageClass(s)}"${stageStyle(s)}>${stageHtml(s,false)}</div>${notes}</section>`;
 }
 
-function toPdf(withNotes){
+/* Portrait swaps the page size for this one print only: a later @page wins over
+   the landscape one in the stylesheet, and it goes again after printing. Hidden
+   slides print, as they do in landscape. */
+function toPdf(withNotes,portrait){
   const host=document.getElementById('printroot');
   toast('Building '+S.slides.length+' pages…');
-  host.innerHTML=S.slides.map(s=>printSlide(s,withNotes)).join('');
+  host.innerHTML=S.slides.map(s=>printSlide(s,withNotes,portrait)).join('');
+  document.getElementById('printpage')?.remove();
+  if(portrait)document.head.insertAdjacentHTML('beforeend',
+    '<style id="printpage">@media print{@page{size:210mm 297mm;margin:0}}</style>');
   setTimeout(()=>{window.print();},450);
 }
-addEventListener('afterprint',()=>{document.getElementById('printroot').innerHTML='';});
+addEventListener('afterprint',()=>{document.getElementById('printroot').innerHTML='';
+  document.getElementById('printpage')?.remove();});
 
 /* ---------- present ---------- */
 function fit(){

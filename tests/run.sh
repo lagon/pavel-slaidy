@@ -31,7 +31,7 @@ window.__api={figEdit,feSelect,feTranslate,fePush,feCommit,feGroup,feUngroup,feU
   present,armFullscreen,paint,moveSlide,checkFit,shortcuts,snap,undo,insertBlock,insertMenu,blocks,where,slideMd,
   importMarkdown,deckSettings,applyStyle,style,hdrHtml,paintNav,paintBody,paintSide,editMarkdown,stats,
   mdParse,mdPreview,mdNormalise,llm,stageHtml,blocks,stageClass,scaleStage,printSlide,paintDeck,paintGrid,
-  fig,measureStage,toggleSkip,liveIdx,liveStats,clock,
+  fig,measureStage,toggleSkip,liveIdx,liveStats,clock,toPdf,
   get S(){return S},set S(v){S=v},get cur(){return cur},set cur(v){cur=v},get FE(){return FE},
   get UNDO(){return UNDO},get showHidden(){return showHidden},set showHidden(v){showHidden=v},get showing(){return showing},
   pickFigure,figRef,figMark,figBlocks,firstFig,figIds,setFigSize,bodyParts,notesHtml,tidyAllDialog,askSummary,importWizard,boot,slideKind,KINDS,
