@@ -174,7 +174,42 @@ addEventListener('load',async()=>{
   w.toPdf(false);await wait(600);
   ok('and a landscape PDF is not portrait',!d.getElementById('printpage')&&
      !pr.querySelector('.portrait')&&pr.querySelectorAll('.psl').length===w.S.slides.length);
-  W.dispatchEvent(new W.Event('afterprint'));W.print=realPrint;
+  W.dispatchEvent(new W.Event('afterprint'));
+  // ---------- portrait with notes: the slide on top, its notes below ----------
+  const ni=w.S.slides.findIndex(x=>(x.notes||'').trim());
+  const keepNotes=w.S.slides[ni>=0?ni:0].notes;
+  if(ni<0)w.S.slides[0].notes='Say this out loud, and follow [the paper](https://example.org/p).';
+  const nj=ni>=0?ni:0;
+  const bare=w.S.slides.findIndex(x=>!(x.notes||'').trim());
+  printed=0;w.toPdf(true,true);await wait(600);
+  const npages=[...pr.querySelectorAll('.psl')];
+  ok('portrait with notes prints one page per slide',npages.length===w.S.slides.length,
+     npages.length+' pages, '+w.S.slides.length+' slides');
+  ok('every page is portrait and carries notes',npages.every(x=>x.classList.contains('portrait')&&
+     x.classList.contains('withnotes')));
+  ok('the page size is A4 portrait here too',!!d.getElementById('printpage')&&printed===1);
+  pr.style.display='block';
+  const np=npages[nj],nsec=np.getBoundingClientRect(),nst=np.querySelector('.stage').getBoundingClientRect(),
+        pn=np.querySelector('.pn');
+  ok('a slide with notes has them on its page',!!pn&&pn.textContent.includes(
+     w.S.slides[nj].notes.trim().replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').slice(0,20)),pn?pn.textContent.slice(0,60):'no notes');
+  ok('the slide keeps the full width, not the landscape shrink',Math.abs(nst.width-nsec.width)<2&&
+     Math.abs(nst.top-nsec.top)<1,Math.round(nst.width)+' vs '+Math.round(nsec.width));
+  const pr_=pn&&pn.getBoundingClientRect();
+  ok('and the notes sit below the slide, inside the sheet',!!pr_&&pr_.top>=nst.bottom&&
+     pr_.bottom<=nsec.bottom+1&&pr_.height>nsec.height*0.4,
+     pr_?'notes '+Math.round(pr_.top-nsec.top)+'..'+Math.round(pr_.bottom-nsec.top)+', slide ends '+
+       Math.round(nst.bottom-nsec.top):'');
+  ok('a link in the notes stays a link',!pn||!/\]\(/.test(w.S.slides[nj].notes)||!!pn.querySelector('a'));
+  if(bare>=0)ok('a slide without notes gets the slide alone',!npages[bare].querySelector('.pn'));
+  pr.style.display='';
+  W.dispatchEvent(new W.Event('afterprint'));
+  ok('after printing it goes back to landscape',!d.getElementById('printpage')&&!pr.innerHTML);
+  w.toPdf(true);await wait(600);
+  ok('and landscape with notes is unchanged',!d.getElementById('printpage')&&
+     !pr.querySelector('.portrait')&&pr.querySelectorAll('.psl.withnotes').length===w.S.slides.length);
+  W.dispatchEvent(new W.Event('afterprint'));
+  w.S.slides[nj].notes=keepNotes;W.print=realPrint;
   // ---------- a centred row keeps its figure ----------
   // Centring stops the figure column stretching, and the figure sizes itself
   // from that column's height — so it collapsed to nothing and simply was not

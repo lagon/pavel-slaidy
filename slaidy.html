@@ -753,6 +753,13 @@ kbd{font:11px ui-monospace,monospace;background:#F1F2F5;border:1px solid var(--l
    210mm is 793.7px, so the stage lands exactly across the page. */
 .psl.portrait{width:210mm;height:297mm;background:#fff}
 .psl.portrait .stage{transform:scale(0.6201)}
+/* portrait with notes: the slide keeps the full width, and the notes get the
+   sheet below it — 118mm down, so there is room for far more than landscape's
+   strip. The landscape shrink and flex column do not apply here. */
+.psl.portrait.withnotes{display:block}
+.psl.portrait.withnotes .stage{transform:scale(0.6201)}
+.psl.portrait .pn{top:128mm;bottom:15mm;left:15mm;right:15mm;max-height:none;
+ font-size:11pt;line-height:1.5;padding-top:5mm}
 .psl .pn{position:absolute;left:15mm;right:15mm;bottom:7mm;padding-top:3mm;border-top:1px solid var(--line);
  font-size:9.5pt;color:var(--gray);line-height:1.4;max-height:36mm;overflow:hidden}
 </style></head><body>
@@ -6459,12 +6466,14 @@ function save(){
    from markdown never loses these settings.</p>
    <p class="tip" style="margin-top:14px">PDF opens the browser print dialog — choose
    <b>Save as PDF</b> and leave margins at none. One slide per landscape page; portrait puts
-   each slide at the top of its own A4 sheet.</p>
+   each slide at the top of its own A4 sheet, with its speaker notes below if you want them.</p>
    <div class="rw" style="margin-top:8px">
      <button class="b" id="ePdfN">PDF with speaker notes</button>
-     <button class="b" id="ePdfP">PDF · portrait</button></div>`);
+     <button class="b" id="ePdfP">PDF · portrait</button>
+     <button class="b" id="ePdfPN">PDF · portrait with notes</button></div>`);
   document.getElementById('ePdf').onclick=()=>{closeDialog();toPdf(false);};
   document.getElementById('ePdfP').onclick=()=>{closeDialog();toPdf(false,true);};
+  document.getElementById('ePdfPN').onclick=()=>{closeDialog();toPdf(true,true);};
   document.getElementById('ePdfN').onclick=()=>{closeDialog();toPdf(true);};
   document.getElementById('eMd').onclick=()=>{
     const by=new Map();S.slides.forEach(s=>{const k=s.group||'deck';if(!by.has(k))by.set(k,[]);by.get(k).push(s);});
